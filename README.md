@@ -106,12 +106,10 @@ public enum ExceptionStatus {
 
 ## 실행 결과 
 
-'''json
+```json
 {
     "Token": "5i9"
 }
-'''
-```json
 {
     "timestamp": "2020-11-23T14:28:17.662+0000",
     "message": "뿌린 건에 대한 조회는 7일 동안 할 수 있습니다.",
