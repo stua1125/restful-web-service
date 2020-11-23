@@ -1,16 +1,19 @@
 package com.kakaopay.restfulwebservice.controller;
 
 import com.kakaopay.restfulwebservice.RandomGenerator.RandomMaker;
+import com.kakaopay.restfulwebservice.exception.ExceptionStatus;
+import com.kakaopay.restfulwebservice.exception.SpreadNotFoundException;
 import com.kakaopay.restfulwebservice.models.Receive;
 import com.kakaopay.restfulwebservice.repository.ReceiveRepository;
 import com.kakaopay.restfulwebservice.repository.SpreadRepository;
-import com.kakaopay.restfulwebservice.uesr.Spread;
+import com.kakaopay.restfulwebservice.models.Spread;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.repository.query.Param;
 import org.springframework.web.bind.annotation.*;
 
 import javax.transaction.Transactional;
 import javax.validation.Valid;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 @RestController
@@ -35,8 +38,19 @@ public class JpaController {
             @PathVariable String token,
             @RequestHeader(value = "X_USER_ID") String X_USER_ID,
             @RequestHeader(value = "X_ROOM_ID") String X_ROOM_ID
-    ){
-        Optional<Spread> spread = spreadRepository.findById(token);
+    ) throws ParseException {
+        Optional<Spread> spread = spreadRepository.findByToken(token);
+        if(Objects.isNull(spread)){
+            throw new SpreadNotFoundException(ExceptionStatus.ERORR508);
+        }
+
+        if(spread.get().getX_USER_ID() != (Integer.parseInt(X_USER_ID))){
+            throw new SpreadNotFoundException(ExceptionStatus.ERORR505);
+        }
+
+        if(isOverSevenDays(spread.get())){
+            throw new SpreadNotFoundException(ExceptionStatus.ERORR506);
+        }
 
         return spread.get();
     }
@@ -65,12 +79,6 @@ public class JpaController {
             }
             receiveItem.setReceive_room_id(X_ROOM_ID);
             receiveItem.setTokenValue(ranToken);
-            int userSq = i;
-            if(userSq == Integer.parseInt(X_USER_ID)){
-                userSq++;
-            }
-            receiveItem.setReceive_id(userSq);
-
             receiveList.add(receiveItem);
         }
         spread.setTakeMoneyList(receiveList);
@@ -83,22 +91,60 @@ public class JpaController {
     }
 
     @Transactional
-    @PatchMapping("/takeMoney/{token}")
-    public String takeMoney(
+    @PatchMapping("/takeMoney")
+    public int[] takeMoney(
             @RequestParam(value ="token")String token,
             @RequestHeader(value = "X_USER_ID") String X_USER_ID,
-            @RequestHeader(value = "X_ROOM_ID") String X_ROOM_ID){
+            @RequestHeader(value = "X_ROOM_ID") String X_ROOM_ID) throws ParseException {
 
         Optional<Receive> receive = receiveRepository.findByTokenValue(token);
+        Optional<Spread> spread = spreadRepository.findByToken(token);
 
+        if(Objects.isNull(spread)){
+            throw new SpreadNotFoundException(ExceptionStatus.ERORR508);
+        }
+
+        if(isOverTenMin(spread.get())){
+            throw new SpreadNotFoundException(ExceptionStatus.ERORR503);
+        }
+
+        if(!spread.get().getX_ROOM_ID().equals(X_ROOM_ID)){
+            throw new SpreadNotFoundException(ExceptionStatus.ERORR502);
+        }
+
+        if(spread.get().getX_USER_ID() == (Integer.parseInt(X_USER_ID))){
+            throw new SpreadNotFoundException(ExceptionStatus.ERORR501);
+        }
+
+        final int[] money = {0};
         receive.ifPresent(selectReceive -> {
                 selectReceive.setSq(++Sq_no);
                 selectReceive.setTokenValue(token);
                 selectReceive.setReceive_id(Integer.parseInt(X_USER_ID));
                 selectReceive.setReceive_room_id(X_ROOM_ID);
-                receiveRepository.save(selectReceive);
+                money[0] = selectReceive.getReceiveOfMoney();
+                receiveRepository.flush();
         });
-        return "sucess";
+        return money;
     }
 
+    public boolean isOverSevenDays(Spread spread) throws ParseException {
+        SimpleDateFormat format = new SimpleDateFormat("yyyyMMdd");
+        Date spreadDate = format.parse(String.valueOf(spread.getSpreadDate()));
+        Date nowDate = new Date();
+        long calDate = nowDate.getTime() - spreadDate.getTime();
+        long calDateDays = calDate / (24*60*60*1000);
+        calDateDays = Math.abs(calDateDays);
+        return false;
+    }
+
+    public boolean isOverTenMin(Spread spread) throws ParseException {
+        SimpleDateFormat format = new SimpleDateFormat("yyyyMMdd");
+        Date spreadDate = format.parse(String.valueOf(spread.getSpreadDate()));
+        Date nowDate = new Date();
+        long calDate = nowDate.getTime() - spreadDate.getTime();
+        long calDateDays = calDate / (60*1000);
+        calDateDays = Math.abs(calDateDays);
+        return false;
+    }
 }

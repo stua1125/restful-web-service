@@ -8,7 +8,8 @@ public enum ExceptionStatus {
     ERORR504(504, "뿌리기당 한 사용자는 한번만 받을 수 있습니다."),
     ERORR505(505, "뿌린 사람 자신만 조회를 할 수 있습니다."),
     ERORR506(506, "뿌린 건에 대한 조회는 7일 동안 할 수 있습니다."),
-    ERORR507(507, "서버 요청 에러입니다.");
+    ERORR507(507, "서버 요청 에러입니다."),
+    ERORR508(508, "존재하지 않는 토큰 입니다.");;
 
     private final int code;
     private final String msg;

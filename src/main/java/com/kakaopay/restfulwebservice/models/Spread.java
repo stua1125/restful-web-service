@@ -1,4 +1,4 @@
-package com.kakaopay.restfulwebservice.uesr;
+package com.kakaopay.restfulwebservice.models;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.kakaopay.restfulwebservice.models.Receive;
@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.*;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 @Data
@@ -29,6 +30,7 @@ public class Spread {
     private Integer numOfPeople;
     private Date SpreadDate;
 
+    @JsonIgnore
     @OneToMany(mappedBy = "token",  cascade = CascadeType.ALL)
     private List<Receive> takeMoneyList = new ArrayList<>();
 
@@ -38,5 +40,4 @@ public class Spread {
         }
         return takeMoneyList;
     }
-
 }
