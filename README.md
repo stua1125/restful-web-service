@@ -13,14 +13,14 @@
 
 ## 상세 구현 요건 및 제약 사항
 1. 뿌리기 API - @PostMapping("/spread")
-  ● 다음 조건을 만족하는 뿌리기 API를 만들어 주세요.
+  * 다음 조건을 만족하는 뿌리기 API를 만들어 주세요.
     * 뿌릴 금액, 뿌릴 인원을 요청값으로 받습니다.
     * 뿌리기 요청건에 대한 고유 token을 발급하고 응답값으로 내려줍니다.
     * 뿌릴 금액을 인원수에 맞게 분배하여 저장합니다. (분배 로직은 자유롭게구현해 주세요.)
     * token은 3자리 문자열로 구성되며 예측이 불가능해야 합니다.
 
 2. 받기 API - @PatchMapping("/takeMoney")
-  ● 다음 조건을 만족하는 받기 API를 만들어 주세요.
+  * 다음 조건을 만족하는 받기 API를 만들어 주세요.
     * 뿌리기 시 발급된 token을 요청값으로 받습니다.
     * token에 해당하는 뿌리기 건 중 아직 누구에게도 할당되지 않은 분배건 하나를
     API를 호출한 사용자에게 할당하고, 그 금액을 응답값으로 내려줍니다.
@@ -32,7 +32,7 @@
     실패 응답이 내려가야 합니다.
     
 3. 조회 API - @GetMapping("/spread/{token}")
-  ● 다음 조건을 만족하는 조회 API를 만들어 주세요.
+  * 다음 조건을 만족하는 조회 API를 만들어 주세요.
     * 뿌리기 시 발급된 token을 요청값으로 받습니다.
     * token에 해당하는 뿌리기 건의 현재 상태를 응답값으로 내려줍니다. 현재
     상태는 다음의 정보를 포함합니다.
@@ -83,6 +83,11 @@ GET http://localhost:8088/api/spread (전체조회)
 GET http://localhost:8088/api/takeMoney/{token} (건별조회)
 조회를 위한 repo.findByToken()를 사용
 
+## 기능 구현 
+* 다수의 인스턴스에서 동작할 수 있도록 @Transactional 어노테이션을 이용
+* 알파벳 소문자, 대문자, 숫자를 조합한 3자리 토큰 발급
+
+
 
 ## 에러 정의 
 ```
@@ -99,10 +104,46 @@ public enum ExceptionStatus {
     ...
 ```
 
+## 실행 결과 
+
+'''json
+{
+    "Token": "5i9"
+}
+'''
 ```json
 {
     "timestamp": "2020-11-23T14:28:17.662+0000",
     "message": "뿌린 건에 대한 조회는 7일 동안 할 수 있습니다.",
     "detailes": "uri=/api/spread/6RA"
+}
+{
+    "token": "5i9",
+    "amountOfMoney": 10000,
+    "numOfPeople": 3,
+    "spreadDate": "2020-11-23T14:56:30.946+0000",
+    "receive": [
+        {
+            "sq": 1,
+            "tokenValue": "5i9",
+            "receive_id": null,
+            "receive_room_id": "1",
+            "receiveOfMoney": 3333
+        },
+        {
+            "sq": 2,
+            "tokenValue": "5i9",
+            "receive_id": null,
+            "receive_room_id": "1",
+            "receiveOfMoney": 3333
+        },
+        {
+            "sq": 3,
+            "tokenValue": "5i9",
+            "receive_id": null,
+            "receive_room_id": "1",
+            "receiveOfMoney": 3334
+        }
+    ]
 }
 ```
