@@ -8,6 +8,18 @@
 
 ## 모델 구조
 
+Spread
+| Type       | 값 (예)          | KEY |
+| --------   | ---------------- | --- |
+| String     | token            |  Y  |
+| Integer    | X_USER_ID        |     |
+| String     | X_ROOM_ID        |     |
+| Integer    | amountOfMoney    |     |
+| Integer    | receive_room_id  |     |
+| Integer    | numOfPeople      |     | 
+| Date       | SpreadDate       |     | 
+| String     | takeMoneyList    |     | 
+
 Receive
 | Type       | 값 (예)          | KEY |
 | --------   | ---------------- | --- |
@@ -17,3 +29,13 @@ Receive
 | Integer    | receive_id       |     |
 | String     | receive_room_id  |     |
 | Integer    | receiveOfMoney   |     |
+
+## 뿌리기
+POST http://localhost:8088/api/spread
+
+## 받기
+PATCH http://localhost:8088/api/takeMoney/{token} 
+
+## 조회
+GET http://localhost:8088/api/spread (전체조회)
+GET http://localhost:8088/api/takeMoney/{token} (건별조회)
