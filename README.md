@@ -38,4 +38,5 @@ PATCH http://localhost:8088/api/takeMoney/{token}
 
 ## 조회
 GET http://localhost:8088/api/spread (전체조회)
+
 GET http://localhost:8088/api/takeMoney/{token} (건별조회)
